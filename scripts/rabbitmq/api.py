@@ -210,6 +210,10 @@ class RabbitMQAPI(object):
         '''Check the aliveness status of a given vhost.'''
         return self.call_api('aliveness-test/%2f')['status']
 
+    def check_node_health(self):
+        '''Check healt of node.'''
+        return self.call_api('healthchecks/node')['status']
+
     def check_server(self, item, node_name):
         '''First, check the overview specific items'''
         if item == 'message_stats_deliver_get':
@@ -239,8 +243,7 @@ class RabbitMQAPI(object):
 
 def main():
     '''Command-line parameters and decoding for Zabbix use/consumption.'''
-    choices = ['list_queues', 'list_shovels', 'list_nodes', 'queues', 'shovels', 'check_aliveness',
-               'server']
+    choices = ['list_queues', 'list_shovels', 'list_nodes', 'queues', 'shovels', 'check_aliveness', 'check_node_health', 'server']
     parser = optparse.OptionParser()
     parser.add_option('--username', help='RabbitMQ API username', default='guest')
     parser.add_option('--password', help='RabbitMQ API password', default='guest')
@@ -264,7 +267,7 @@ def main():
     api = RabbitMQAPI(user_name=options.username, password=options.password,
                       host_name=options.hostname, port=options.port,
                       conf=options.conf, senderhostname=options.senderhostname,
-		     protocol=options.protocol)
+                     protocol=options.protocol)
     if options.filters:
         try:
             filters = json.loads(options.filters)
@@ -286,6 +289,8 @@ def main():
         print api.check_shovel(filters)
     elif options.check == 'check_aliveness':
         print api.check_aliveness()
+    elif options.check == 'check_node_health':
+        print api.check_node_health()
     elif options.check == 'server':
         if not options.metric:
             parser.error('Missing required parameter: "metric"')
